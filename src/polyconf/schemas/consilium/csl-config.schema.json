@@ -1,0 +1,401 @@
+{
+  "$id": "https://raw.githubusercontent.com/benbenbang/consilium/main/schemas/csl-config.schema.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "definitions": {
+    "commitType": {
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "enabled": {
+          "default": true,
+          "type": "boolean"
+        },
+        "name": {
+          "description": "Standard conventional commit type",
+          "enum": [
+            "feat",
+            "fix",
+            "docs",
+            "refactor",
+            "test",
+            "perf",
+            "build",
+            "ci",
+            "chore",
+            "style",
+            "ops",
+            "hotfix",
+            "release"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "type": "object"
+    }
+  },
+  "description": "Configuration schema for Consilium commit message generator. Supports YAML (.csl.yaml) and TOML (.csl.toml) formats.",
+  "examples": [
+    {
+      "commit": {
+        "max_subject_length": 72,
+        "require_scope": true,
+        "scope": {
+          "allowed": [
+            "api",
+            "cli",
+            "config",
+            "core"
+          ],
+          "mode": "allowed-list"
+        },
+        "types": [
+          {
+            "description": "New feature",
+            "enabled": true,
+            "name": "feat"
+          },
+          {
+            "description": "Bug fix",
+            "enabled": true,
+            "name": "fix"
+          }
+        ]
+      },
+      "llm": {
+        "api_key": "$ANTHROPIC_API_KEY",
+        "max_tokens": 1024,
+        "model": "claude-sonnet-4-6",
+        "provider": "anthropic",
+        "temperature": 0.7
+      }
+    },
+    {
+      "commit": {
+        "require_scope": true,
+        "scope": {
+          "mappings": {
+            "cmd/": "cmd",
+            "internal/": "internal",
+            "pkg/": "pkg"
+          },
+          "mode": "regex",
+          "pattern": "^[a-z0-9-]+$"
+        }
+      },
+      "llm": {
+        "model": "llama3.3",
+        "provider": "ollama",
+        "temperature": 0.5
+      }
+    },
+    {
+      "commit": {
+        "validation": {
+          "enabled": true,
+          "pattern": "^(feat|fix)(\\(.+\\))?: .{1,50}$"
+        }
+      },
+      "llm": {
+        "auth_method": "iam",
+        "aws_profile": "my-company",
+        "aws_region": "us-east-1",
+        "model": "us.anthropic.claude-sonnet-4-6",
+        "provider": "bedrock"
+      }
+    }
+  ],
+  "properties": {
+    "commit": {
+      "description": "Commit message configuration settings",
+      "properties": {
+        "max_subject_length": {
+          "default": 72,
+          "description": "Maximum subject line length in characters. Follows conventional commits recommendation of 50-72 characters",
+          "maximum": 200,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "require_body": {
+          "default": false,
+          "description": "Require body in commit messages. When true, commits must include a body section after the subject line",
+          "type": "boolean"
+        },
+        "require_scope": {
+          "default": false,
+          "description": "Require scope in commit messages. When true, commits must include scope: type(scope): description",
+          "type": "boolean"
+        },
+        "scope": {
+          "description": "Configure how scopes are validated. NOTE: If commit.validation.pattern is defined with scope regex, commit.scope.mode = 'regex' will be ignored (warning shown)",
+          "properties": {
+            "allowed": {
+              "description": "Allowed scopes list (used when mode = 'allowed-list'). Scope must be one of these values",
+              "examples": [
+                [
+                  "api",
+                  "cli",
+                  "config",
+                  "core",
+                  "db",
+                  "ui"
+                ]
+              ],
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "mappings": {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "description": "Monorepo path mappings for automatic scope detection. Maps file path prefixes to scope names. When files in these paths are changed, the corresponding scope is suggested",
+              "examples": [
+                {
+                  ".github/": "ci",
+                  "cmd/": "cmd",
+                  "internal/git/": "git",
+                  "internal/llm/": "llm",
+                  "pkg/commitmsg/": "commitmsg"
+                }
+              ],
+              "type": "object"
+            },
+            "mode": {
+              "default": "regex",
+              "description": "Validation mode: 'none' (no validation), 'regex' (must match pattern), 'allowed-list' (must be in allowed list)",
+              "enum": [
+                "none",
+                "regex",
+                "allowed-list"
+              ],
+              "type": "string"
+            },
+            "pattern": {
+              "default": "^[a-z0-9-]+$",
+              "description": "Regex pattern for scope validation (used when mode = 'regex'). Default pattern allows lowercase letters, numbers, and hyphens",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "show_header": {
+          "default": true,
+          "description": "Show header when generating commit messages. Set to false when using prepare-commit-msg hook to avoid extra output in editor",
+          "type": "boolean"
+        },
+        "types": {
+          "description": "Define which commit types are allowed. If omitted, all conventional commit types are allowed",
+          "items": {
+            "properties": {
+              "description": {
+                "description": "Description of what this commit type represents",
+                "type": "string"
+              },
+              "enabled": {
+                "default": true,
+                "description": "Whether this commit type is enabled",
+                "type": "boolean"
+              },
+              "name": {
+                "description": "Commit type name (e.g., feat, fix, docs)",
+                "examples": [
+                  "feat",
+                  "fix",
+                  "docs",
+                  "refactor",
+                  "test",
+                  "perf",
+                  "build",
+                  "ci",
+                  "chore",
+                  "style",
+                  "ops",
+                  "hotfix",
+                  "release"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "validation": {
+          "description": "Full regex pattern for commit message validation. When enabled, this takes priority over granular configs. MUTUAL EXCLUSIVITY: validation.pattern + scope.regex = CONFLICT (warning, pattern wins), validation.pattern + scope.allowed-list = OK (both used)",
+          "properties": {
+            "enabled": {
+              "default": false,
+              "description": "Enable custom validation pattern",
+              "type": "boolean"
+            },
+            "pattern": {
+              "description": "Full regex pattern covering entire commit message format. Default pattern follows semantic-release conventions",
+              "examples": [
+                "^(build|ci|docs|feat|fix|perf|refactor|style|test|ops|hotfix|release|chore)\\([\\w,\\.,\\-,\\(,\\),\\/]+\\)(!?)(:)\\s{1}([\\w,\\W,:]+)$",
+                "^(feat|fix)(\\(.+\\))?: .{1,50}$"
+              ],
+              "type": "string"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "include": {
+      "description": "Include additional config files based on git directory. Similar to Git's includeIf directive. Later configs override earlier ones (scalars), replace arrays",
+      "items": {
+        "properties": {
+          "path": {
+            "description": "Path to config file to include (supports ~ expansion). File must exist",
+            "examples": [
+              "~/.config/csl/work.toml",
+              "~/.config/csl/personal.yaml",
+              "/etc/csl/team.toml"
+            ],
+            "type": "string"
+          },
+          "when": {
+            "description": "Condition: Include when in this git directory (supports ~ expansion). Format: gitdir:path",
+            "examples": [
+              "gitdir:~/work/",
+              "gitdir:~/personal/",
+              "gitdir:/home/user/projects/"
+            ],
+            "pattern": "^gitdir:",
+            "type": "string"
+          }
+        },
+        "required": [
+          "when",
+          "path"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "llm": {
+      "description": "LLM provider configuration",
+      "properties": {
+        "api_key": {
+          "description": "API Key for api_key auth method. Use environment variable expansion to avoid committing secrets. Syntax: $VAR_NAME or ${VAR_NAME}. Examples: $ANTHROPIC_API_KEY, $OPENAI_API_KEY, $XAI_API_KEY, $GEMINI_API_KEY, $MISTRAL_API_KEY. Ollama doesn't need an API key",
+          "examples": [
+            "$ANTHROPIC_API_KEY",
+            "${OPENAI_API_KEY}",
+            "$XAI_API_KEY"
+          ],
+          "type": "string"
+        },
+        "auth_method": {
+          "default": "api_key",
+          "description": "Authentication method: 'api_key' (for anthropic, openai, grok, gemini, mistral), 'iam' (for bedrock only with AWS IAM/SSO)",
+          "enum": [
+            "api_key",
+            "iam"
+          ],
+          "type": "string"
+        },
+        "aws_profile": {
+          "description": "AWS profile (optional, uses default if not specified). Useful when you have multiple AWS accounts/profiles. Must match profile name from: aws configure sso",
+          "type": "string"
+        },
+        "aws_region": {
+          "description": "AWS region (required for Bedrock). Example: us-east-1, eu-west-1",
+          "examples": [
+            "us-east-1",
+            "us-west-2",
+            "eu-west-1",
+            "ap-southeast-1"
+          ],
+          "pattern": "^[a-z]{2}-[a-z]+-\\d{1}$",
+          "type": "string"
+        },
+        "claude_code_session": {
+          "default": "ephemeral",
+          "description": "Session handling for the claude-code provider only. 'ephemeral' (default) runs 'claude -p --no-session-persistence' so commit generation never clutters your session history. Any other value sets the session display name ('claude -p -n <value>') for identification \u2014 it names sessions, it does not resume them.",
+          "examples": [
+            "ephemeral",
+            "consilium"
+          ],
+          "type": "string"
+        },
+        "effort": {
+          "description": "Reasoning effort level (Anthropic only). Sent as output_config.effort on the Messages API to control how much the model thinks and acts. Omit to use the provider default (Anthropic: high). 'max' requires Opus 4.6+; 'xhigh' requires Opus 4.7+. Sonnet 4.5 and Haiku 4.5 do not support effort and will return an API error.",
+          "enum": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "type": "string"
+        },
+        "max_tokens": {
+          "default": 1024,
+          "description": "Maximum tokens for LLM response. Most commit messages need 100-500 tokens. OpenAI reasoning models (gpt-5, o1, o3) may need 4096+ tokens",
+          "maximum": 100000,
+          "minimum": 100,
+          "type": "integer"
+        },
+        "model": {
+          "description": "Model name (optional, uses provider default if not specified). See schema documentation for provider-specific model lists",
+          "examples": [
+            "claude-sonnet-4-6",
+            "claude-haiku-4-5",
+            "claude-opus-4-8",
+            "gpt-5.1",
+            "gpt-5-mini",
+            "llama3.3",
+            "mistral",
+            "grok-4-fast-reasoning",
+            "gemini-2.5-flash",
+            "mistral-small-latest",
+            "us.anthropic.claude-sonnet-4-6"
+          ],
+          "type": "string"
+        },
+        "prompt_preferences": {
+          "description": "Additional instructions for the LLM to customize commit message style. This is included in the prompt sent to the LLM. Use this to specify formatting, structure, or style preferences",
+          "examples": [
+            "Use this format:\n<summary>\n\n- List specific changes made\n- Each change as a separate bullet point"
+          ],
+          "type": "string"
+        },
+        "provider": {
+          "description": "LLM provider selection. Options: anthropic (Claude API), openai (GPT), ollama (local), grok (X.AI), gemini (Google API), gemini-cli (Google via OAuth token, GEMINI_CLI_TOKEN), claude-code (Claude via the Claude Code CLI, no API key), mistral (Mistral AI), bedrock (AWS)",
+          "enum": [
+            "anthropic",
+            "openai",
+            "ollama",
+            "grok",
+            "gemini",
+            "gemini-cli",
+            "claude-code",
+            "mistral",
+            "bedrock"
+          ],
+          "type": "string"
+        },
+        "temperature": {
+          "default": 0.7,
+          "description": "Temperature for LLM generation. Lower (0.0-0.3) = More focused and deterministic, Medium (0.4-0.9) = Balanced creativity and consistency (recommended), Higher (1.0+) = More creative and varied output. Note: Temperature ranges vary by provider",
+          "maximum": 2.0,
+          "minimum": 0.0,
+          "type": "number"
+        }
+      },
+      "type": "object"
+    }
+  },
+  "title": "Consilium Configuration",
+  "type": "object"
+}
