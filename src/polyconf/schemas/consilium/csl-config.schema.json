@@ -110,9 +110,41 @@
     }
   ],
   "properties": {
+    "$id": {
+      "description": "Optional identifier for this config document. Permitted so a config file may carry an $id without violating the schema",
+      "type": "string"
+    },
+    "$schema": {
+      "description": "Optional reference to this JSON schema, enabling editor validation and autocomplete in the config file",
+      "type": "string"
+    },
     "commit": {
       "description": "Commit message configuration settings",
       "properties": {
+        "exclude_diff_patterns": {
+          "description": "Additional file patterns to exclude from the diff sent to the LLM. Appended to the built-in lock file list. Useful for excluding generated files from LLM context",
+          "examples": [
+            [
+              "*.generated.go",
+              "dist/*",
+              "*.min.js"
+            ]
+          ],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "exclude_lock_files": {
+          "default": true,
+          "description": "Exclude lock file diffs from the prompt to save tokens. Lock file names and line counts are still shown, but their diff content is excluded (package-lock.json, yarn.lock, go.sum, etc.)",
+          "type": "boolean"
+        },
+        "include_stats_in_prompt": {
+          "default": true,
+          "description": "Include diff statistics (file counts and line changes) in the LLM prompt to help it understand the scope of changes",
+          "type": "boolean"
+        },
         "max_subject_length": {
           "default": 72,
           "description": "Maximum subject line length in characters. Follows conventional commits recommendation of 50-72 characters",
@@ -168,13 +200,19 @@
             },
             "mode": {
               "default": "regex",
-              "description": "Validation mode: 'none' (no validation), 'regex' (must match pattern), 'allowed-list' (must be in allowed list)",
+              "description": "Validation mode: 'none' (no validation), 'regex' (must match pattern), 'allowed-list' (must be in allowed list), 'file-path' (use path mappings for scope detection). Note: mappings work regardless of mode (detection vs validation are separate)",
               "enum": [
                 "none",
                 "regex",
-                "allowed-list"
+                "allowed-list",
+                "file-path"
               ],
               "type": "string"
+            },
+            "nested_scopes": {
+              "default": false,
+              "description": "Enable nested scope detection for monorepos. When true, the first subdirectory after a mapped path is appended to the base scope (e.g. mapping 'packages/api' + file 'packages/api/core/x.go' -> scope 'api/core'). When false, only the base scope is used",
+              "type": "boolean"
             },
             "pattern": {
               "default": "^[a-z0-9-]+$",
@@ -183,6 +221,11 @@
             }
           },
           "type": "object"
+        },
+        "show_excluded_files": {
+          "default": true,
+          "description": "Show a 'Lock files (excluded from diff)' section listing excluded file stats. When false, excluded files are completely invisible in the prompt. Only applies when exclude_lock_files is true",
+          "type": "boolean"
         },
         "show_header": {
           "default": true,
@@ -247,6 +290,17 @@
             }
           },
           "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "context": {
+      "description": "Project context configuration. Run 'csl context build' to analyze and cache project information for better commit messages",
+      "properties": {
+        "enabled": {
+          "default": false,
+          "description": "Automatically include cached project context (README summary, tech stack, structure) in prompts. Requires running 'csl context build' first",
+          "type": "boolean"
         }
       },
       "type": "object"
@@ -339,6 +393,29 @@
           ],
           "type": "string"
         },
+        "examples": {
+          "default": "default",
+          "description": "Control commit message examples shown to the LLM: 'none' (no examples, use with detailed prompt_preferences), 'default' (built-in conventional commit examples), 'custom' (load from examples_file)",
+          "enum": [
+            "none",
+            "default",
+            "custom"
+          ],
+          "type": "string"
+        },
+        "examples_file": {
+          "description": "Path to a file containing custom commit message examples (used when examples = 'custom'). Separate each example with '---' on its own line. Supports ~ expansion",
+          "examples": [
+            "~/.config/csl/my-examples.txt"
+          ],
+          "type": "string"
+        },
+        "max_diff_size": {
+          "default": 50000,
+          "description": "Maximum diff size in bytes sent to the LLM. Increase to commit large changesets in one go. Very large diffs may impact response quality",
+          "minimum": 1,
+          "type": "integer"
+        },
         "max_tokens": {
           "default": 1024,
           "description": "Maximum tokens for LLM response. Most commit messages need 100-500 tokens. OpenAI reasoning models (gpt-5, o1, o3) may need 4096+ tokens",
@@ -370,6 +447,13 @@
           ],
           "type": "string"
         },
+        "prompt_template": {
+          "description": "Path to a text/template file that fully replaces the built-in prompt. Supports ~ expansion. Falls back to the built-in prompt if the file cannot be rendered",
+          "examples": [
+            "~/.config/csl/prompt.tmpl"
+          ],
+          "type": "string"
+        },
         "provider": {
           "description": "LLM provider selection. Options: anthropic (Claude API), openai (GPT), ollama (local), grok (X.AI), gemini (Google API), gemini-cli (Google via OAuth token, GEMINI_CLI_TOKEN), claude-code (Claude via the Claude Code CLI, no API key), mistral (Mistral AI), bedrock (AWS)",
           "enum": [
@@ -391,6 +475,57 @@
           "maximum": 2.0,
           "minimum": 0.0,
           "type": "number"
+        }
+      },
+      "type": "object"
+    },
+    "stream": {
+      "description": "Streaming mode configuration. WARNING: streaming mode uses multiple API calls (3-5x cost)",
+      "properties": {
+        "mode": {
+          "default": "spinner",
+          "description": "How to process diffs: 'spinner' (single API call with progress animation, fast and cheap) or 'streaming' (per-file review then synthesis, slower and more expensive, better UX for large diffs)",
+          "enum": [
+            "spinner",
+            "streaming"
+          ],
+          "type": "string"
+        },
+        "threshold": {
+          "default": 500,
+          "description": "Minimum total changed lines (insertions + deletions) to activate streaming. Only used when mode = 'streaming'; smaller diffs use spinner mode",
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    },
+    "ui": {
+      "description": "Terminal UI and theme configuration",
+      "properties": {
+        "show_progress": {
+          "default": true,
+          "description": "Show a progress spinner during LLM generation. Automatically disabled in git hooks and when output is piped",
+          "type": "boolean"
+        },
+        "theme": {
+          "default": "Dracula",
+          "description": "Color theme name for terminal output. Run 'csl theme list' to see all built-in themes",
+          "examples": [
+            "Dracula",
+            "Nord",
+            "Tokyo Night",
+            "Catppuccin Mocha",
+            "Gruvbox"
+          ],
+          "type": "string"
+        },
+        "theme_path": {
+          "description": "Path to a custom theme JSON file. Overrides the theme setting if specified. Supports ~ expansion",
+          "examples": [
+            "~/.config/csl/themes/my-theme.json"
+          ],
+          "type": "string"
         }
       },
       "type": "object"
