@@ -338,10 +338,29 @@
       "type": "array"
     },
     "llm": {
+      "allOf": [
+        {
+          "if": {
+            "required": [
+              "claude_code_session"
+            ]
+          },
+          "then": {
+            "properties": {
+              "provider": {
+                "const": "claude-code"
+              }
+            },
+            "required": [
+              "provider"
+            ]
+          }
+        }
+      ],
       "description": "LLM provider configuration",
       "properties": {
         "api_key": {
-          "description": "API Key for api_key auth method. Use environment variable expansion to avoid committing secrets. Syntax: $VAR_NAME or ${VAR_NAME}. Examples: $ANTHROPIC_API_KEY, $OPENAI_API_KEY, $XAI_API_KEY, $GEMINI_API_KEY, $MISTRAL_API_KEY. Ollama doesn't need an API key",
+          "description": "API Key for api_key auth method. Use environment variable expansion to avoid committing secrets. Syntax: $VAR_NAME or ${VAR_NAME}. Examples: $ANTHROPIC_API_KEY, $OPENAI_API_KEY, $XAI_API_KEY, $GEMINI_API_KEY, $MISTRAL_API_KEY. Ollama, Bedrock, and Claude Code do not use API keys.",
           "examples": [
             "$ANTHROPIC_API_KEY",
             "${OPENAI_API_KEY}",
@@ -371,6 +390,16 @@
             "ap-southeast-1"
           ],
           "pattern": "^[a-z]{2}-[a-z]+-\\d{1}$",
+          "type": "string"
+        },
+        "base_url": {
+          "description": "Base URL for local HTTP providers. Must start with http:// or https://. Currently used by Ollama. Defaults to OLLAMA_HOST or http://localhost:11434 when omitted.",
+          "examples": [
+            "http://localhost:11434",
+            "http://192.168.1.10:11434",
+            "https://ollama.example.com"
+          ],
+          "pattern": "^https?://.+",
           "type": "string"
         },
         "claude_code_session": {
@@ -408,6 +437,16 @@
           "examples": [
             "~/.config/csl/my-examples.txt"
           ],
+          "type": "string"
+        },
+        "host": {
+          "description": "Alias for base_url. Must start with http:// or https://. Useful for Ollama hosts such as http://192.168.1.10:11434.",
+          "examples": [
+            "http://localhost:11434",
+            "http://192.168.1.10:11434",
+            "https://ollama.example.com"
+          ],
+          "pattern": "^https?://.+",
           "type": "string"
         },
         "max_diff_size": {
