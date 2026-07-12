@@ -206,11 +206,21 @@
 # AUTHENTICATION
 # ============================================================================
 
-# Authentication method (default: "api_key")
-# Options:
-#   - "api_key": Use API key (for anthropic, openai, grok, gemini, mistral)
-#   - "iam": Use AWS IAM/SSO (for bedrock only)
-# auth_method = "api_key"
+# Preferred nested authentication layout for cloud providers.
+#
+# [llm.auth]
+# method = "api_key" # api_key or iam
+#
+# [llm.auth.aws]
+# region = "us-east-1"
+# profile = "my-company"
+#
+# [llm.auth.gcloud]
+# project = "my-project"
+#
+# [llm.auth.azure]
+# tenant_id = "tenant-id"
+# client_id = "client-id"
 
 # API Key (for api_key auth method)
 # Use environment variable expansion to avoid committing secrets
@@ -229,19 +239,6 @@
 # Defaults to OLLAMA_HOST or http://localhost:11434
 # base_url = "http://192.168.1.10:11434"
 # host = "http://192.168.1.10:11434"
-
-# ============================================================================
-# AWS BEDROCK SPECIFIC
-# ============================================================================
-# Only used when provider = "bedrock" and auth_method = "iam"
-
-# AWS region (required for Bedrock)
-# aws_region = "us-east-1"
-
-# AWS profile (optional, uses default if not specified)
-# Useful when you have multiple AWS accounts/profiles
-# Must match profile name from: aws configure sso
-# aws_profile = "my-company"
 
 # ============================================================================
 # MODEL CONFIGURATION
@@ -475,7 +472,7 @@
 # path = "~/.config/csl/personal.toml"
 
 # Example use case: Different LLM providers for work vs personal projects
-# work.toml:     provider = "bedrock", aws_profile = "company"
+# work.toml:     provider = "bedrock", auth.aws.profile = "company"
 # personal.toml: provider = "ollama" (free local)
 
 # ============================================================================

@@ -101,9 +101,13 @@
         }
       },
       "llm": {
-        "auth_method": "iam",
-        "aws_profile": "my-company",
-        "aws_region": "us-east-1",
+        "auth": {
+          "aws": {
+            "profile": "my-company",
+            "region": "us-east-1"
+          },
+          "method": "iam"
+        },
         "model": "us.anthropic.claude-sonnet-4-6",
         "provider": "bedrock"
       }
@@ -368,29 +372,91 @@
           ],
           "type": "string"
         },
-        "auth_method": {
-          "default": "api_key",
-          "description": "Authentication method: 'api_key' (for anthropic, openai, grok, gemini, mistral), 'iam' (for bedrock only with AWS IAM/SSO)",
-          "enum": [
-            "api_key",
-            "iam"
-          ],
-          "type": "string"
-        },
-        "aws_profile": {
-          "description": "AWS profile (optional, uses default if not specified). Useful when you have multiple AWS accounts/profiles. Must match profile name from: aws configure sso",
-          "type": "string"
-        },
-        "aws_region": {
-          "description": "AWS region (required for Bedrock). Example: us-east-1, eu-west-1",
-          "examples": [
-            "us-east-1",
-            "us-west-2",
-            "eu-west-1",
-            "ap-southeast-1"
-          ],
-          "pattern": "^[a-z]{2}-[a-z]+-\\d{1}$",
-          "type": "string"
+        "auth": {
+          "additionalProperties": false,
+          "description": "Provider-specific authentication configuration for cloud providers.",
+          "properties": {
+            "aws": {
+              "additionalProperties": false,
+              "description": "AWS authentication settings. Used by the bedrock provider.",
+              "properties": {
+                "profile": {
+                  "description": "AWS profile (optional, uses default if not specified). Useful when you have multiple AWS accounts/profiles. Must match profile name from: aws configure sso",
+                  "type": "string"
+                },
+                "region": {
+                  "description": "AWS region (required for Bedrock). Example: us-east-1, eu-west-1",
+                  "examples": [
+                    "us-east-1",
+                    "us-west-2",
+                    "eu-west-1",
+                    "ap-southeast-1"
+                  ],
+                  "pattern": "^[a-z]{2}-[a-z]+-\\d{1}$",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "azure": {
+              "additionalProperties": false,
+              "description": "Azure authentication settings. Reserved for Azure cloud-backed providers.",
+              "properties": {
+                "client_id": {
+                  "description": "Azure client ID.",
+                  "type": "string"
+                },
+                "subscription_id": {
+                  "description": "Azure subscription ID.",
+                  "type": "string"
+                },
+                "tenant_id": {
+                  "description": "Azure tenant ID.",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "gcloud": {
+              "additionalProperties": false,
+              "description": "Google Cloud authentication settings. Reserved for Google Cloud-backed providers.",
+              "properties": {
+                "credentials_file": {
+                  "description": "Path to a gcloud credentials file. Supports ~ expansion.",
+                  "examples": [
+                    "~/.config/gcloud/application_default_credentials.json"
+                  ],
+                  "type": "string"
+                },
+                "location": {
+                  "description": "Google Cloud location or region.",
+                  "examples": [
+                    "us-central1",
+                    "global"
+                  ],
+                  "type": "string"
+                },
+                "project": {
+                  "description": "Google Cloud project ID.",
+                  "examples": [
+                    "my-project"
+                  ],
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "method": {
+              "default": "api_key",
+              "description": "Authentication method: 'api_key' (for anthropic, openai, grok, gemini, mistral), 'iam' (for bedrock only with AWS IAM/SSO)",
+              "enum": [
+                "api_key",
+                "iam"
+              ],
+              "type": "string"
+            }
+          },
+          "type": "object"
         },
         "base_url": {
           "description": "Base URL for local HTTP providers. Must start with http:// or https://. Currently used by Ollama. Defaults to OLLAMA_HOST or http://localhost:11434 when omitted.",
