@@ -1,0 +1,56 @@
+name: semantic-release
+
+on:
+  workflow_dispatch:
+    inputs:
+      prompt:
+        description: "If you are sure to launch a new release, put the value to true."
+        default: "false"
+        required: true
+        type: choice
+        options:
+          - "true"
+          - "false"
+
+jobs:
+  semantic-release:
+    name: semantic-release
+    if: ${{ inputs.prompt == 'true' }}
+    uses: benbenbang/reusable-workflows/.github/workflows/semantic-release.yml@1.0.1
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+      statuses: read
+      packages: read
+    secrets: inherit
+    with:
+      new_version_title: "🧮 LibItoFin"
+
+  publish-crate:
+    name: publish libitofin to crates.io
+    needs: semantic-release
+    if: ${{ needs.semantic-release.outputs.new_release == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # mint the OIDC token crates.io trusted publishing verifies
+    steps:
+      - name: checkout the released tag
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.semantic-release.outputs.new_release_tag }}
+      - name: install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+      - name: sync the workspace version to the release tag
+        run: |
+          VER="${{ needs.semantic-release.outputs.new_release_tag }}"
+          sed -i -E "s/^version = \"[0-9]+\.[0-9]+\.[0-9]+\"/version = \"${VER}\"/" Cargo.toml
+          grep -E "^version" Cargo.toml
+      - name: authenticate to crates.io via OIDC trusted publishing
+        uses: rust-lang/crates-io-auth-action@v1
+        id: auth
+      - name: publish
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
+        run: cargo publish -p libitofin --allow-dirty
