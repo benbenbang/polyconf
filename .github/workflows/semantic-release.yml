@@ -25,7 +25,7 @@ jobs:
       packages: read
     secrets: inherit
     with:
-      new_version_title: "🧮 LibItoFin"
+      new_version_title: "📏 Polyconf"
 
   publish-crate:
     name: publish libitofin to crates.io
