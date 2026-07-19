@@ -1,5 +1,5 @@
 # Consilium Configuration Schema
-#:schema https://raw.githubusercontent.com/benbenbang/polyconf/refs/tags/0.1.0/src/polyconf/schemas/consilium/csl-config.schema.json
+#:schema https://raw.githubusercontent.com/benbenbang/polyconf/0.2.0/src/schemas/consilium/csl-config.schema.json
 # Complete reference showing all available configuration options
 # Uncomment and modify options as needed for your project
 
