@@ -1,0 +1,20 @@
+enhancement:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "src/schemas/**/*"
+
+workflows:
+  - changed-files:
+      - any-glob-to-any-file:
+          - ".github/**/*"
+          - makefile
+          - "scripts/**/*"
+          - "releaserc.json"
+
+documentation:
+  - changed-files:
+      - any-glob-to-any-file:
+          - README.md
+          - "**/*.md"
+          - "docs/**/*.md"
+          - "docs/mkdocs.yml"
