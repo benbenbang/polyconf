@@ -411,6 +411,17 @@ pr:
   # title_max_length: 100
 
 # ============================================================================
+# PR HINTS
+# ============================================================================
+# Which next-step hints 'csl pr' prints. csl never runs these, it only prints
+
+hint:
+  # program: Which create path to print (default: "url")
+  # Options: "url" (a GitHub compare link with title and body pre-filled),
+  #          "gh" (a 'gh pr create' command), "none" (print nothing)
+  # program: url
+
+# ============================================================================
 # CONDITIONAL INCLUDES (ADVANCED)
 # ============================================================================
 # Include additional config files based on git directory
