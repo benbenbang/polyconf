@@ -309,6 +309,22 @@
       },
       "type": "object"
     },
+    "hint": {
+      "description": "Controls the next-step hints printed by 'csl pr'. csl never runs these commands, it only prints them",
+      "properties": {
+        "program": {
+          "default": "url",
+          "description": "Which create path to print: 'url' (a GitHub compare link that pre-fills the title and body), 'gh' (a 'gh pr create' command), or 'none' (print nothing)",
+          "enum": [
+            "url",
+            "gh",
+            "none"
+          ],
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
     "include": {
       "description": "Include additional config files based on git directory. Similar to Git's includeIf directive. Later configs override earlier ones (scalars), replace arrays",
       "items": {
