@@ -1,5 +1,5 @@
 # Consilium Configuration Schema
-#:schema https://raw.githubusercontent.com/benbenbang/polyconf/0.2.0/src/schemas/consilium/csl-config.schema.json
+#:schema https://raw.githubusercontent.com/benbenbang/polyconf/refs/tags/0.1.0/src/polyconf/schemas/consilium/csl-config.schema.json
 # Complete reference showing all available configuration options
 # Uncomment and modify options as needed for your project
 
@@ -322,9 +322,10 @@
 
 # claude-code session handling (claude-code provider only)
 # "ephemeral" (default) runs 'claude -p --no-session-persistence' so commit
-# generation never clutters your session history; any other value sets the
-# session display name ('claude -p -n <value>') for identification.
-# Note: this names sessions, it does not resume them.
+# generation never clutters your session history. Any other value reuses a
+# session: it resumes that session by title or UUID ('claude -p --resume <value>'),
+# creating it on first use, so every run continues the same one. A name like
+# "planner" is created with -n; a UUID targets that exact session.
 # claude_code_session = "ephemeral"
 
 # Maximum diff size in bytes (default: 50000)
@@ -453,6 +454,20 @@
 # Cache location: ~/.csl/{project-name}/context.json
 # Update cache: csl context build --force
 # enabled = false
+
+# ============================================================================
+# PULL REQUESTS
+# ============================================================================
+# Settings of 'csl pr'. csl never calls GitHub: it prints the title, the body
+# and the commands you can run yourself
+
+[pr]
+# merge: Merge method printed in the 'gh pr merge' hint (default: "squash")
+# Options: "squash", "rebase", "merge"
+# merge = "squash"
+
+# title_max_length: Maximum PR title length, counting type and scope (default: 100)
+# title_max_length = 100
 
 # ============================================================================
 # CONDITIONAL INCLUDES (ADVANCED)

@@ -470,10 +470,11 @@
         },
         "claude_code_session": {
           "default": "ephemeral",
-          "description": "Session handling for the claude-code provider only. 'ephemeral' (default) runs 'claude -p --no-session-persistence' so commit generation never clutters your session history. Any other value sets the session display name ('claude -p -n <value>') for identification \u2014 it names sessions, it does not resume them.",
+          "description": "Session handling for the claude-code provider only. 'ephemeral' (default) runs 'claude -p --no-session-persistence' so commit generation never clutters your session history. Any other value reuses a session: it resumes that session by title or UUID ('claude -p --resume <value>'), creating it on first use, so every run continues the same one. A name like 'planner' is created with -n; a UUID targets that exact session.",
           "examples": [
             "ephemeral",
-            "consilium"
+            "planner",
+            "87f074cc-25c1-4cba-a663-ad5d6af8d242"
           ],
           "type": "string"
         },
@@ -580,6 +581,28 @@
           "maximum": 2.0,
           "minimum": 0.0,
           "type": "number"
+        }
+      },
+      "type": "object"
+    },
+    "pr": {
+      "description": "Pull request configuration used by 'csl pr'. csl never calls GitHub: these values only shape the printed title and the printed next-step hints",
+      "properties": {
+        "merge": {
+          "default": "squash",
+          "description": "Merge method printed in the 'gh pr merge' hint",
+          "enum": [
+            "squash",
+            "rebase",
+            "merge"
+          ],
+          "type": "string"
+        },
+        "title_max_length": {
+          "default": 100,
+          "description": "Maximum pull request title length in characters, counting the type and the scope",
+          "minimum": 1,
+          "type": "integer"
         }
       },
       "type": "object"
