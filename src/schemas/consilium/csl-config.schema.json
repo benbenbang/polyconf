@@ -309,6 +309,26 @@
       },
       "type": "object"
     },
+    "diff": {
+      "description": "Filters applied to the diff that feeds commit message generation, honoured by 'csl generate', 'csl diff' and 'csl prompt view'. The --exclude and --exclude-regex flags add to these patterns",
+      "properties": {
+        "exclude": {
+          "description": "Gitignore-style patterns; matching files are dropped from the diff (e.g. '*.md', 'artifacts/', '**/gen/*')",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "exclude_regex": {
+          "description": "Regular expressions matched against the full slash-joined path; matching files are dropped from the diff",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
     "hint": {
       "description": "Controls the next-step hints printed by 'csl pr'. csl never runs these commands, it only prints them",
       "properties": {
