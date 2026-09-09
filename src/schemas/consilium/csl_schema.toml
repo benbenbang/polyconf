@@ -456,6 +456,22 @@
 # enabled = false
 
 # ============================================================================
+# DIFF FILTERS
+# ============================================================================
+# Drop files from the diff that feeds commit message generation. Honoured by
+# 'csl generate', 'csl diff' and 'csl prompt view'. The --exclude and
+# --exclude-regex flags add to these patterns
+
+[diff]
+# exclude: Gitignore-style patterns; matching files are dropped from the diff
+# Example: ["*.md", "artifacts/", "**/gen/*"]
+# exclude = []
+
+# exclude_regex: Regular expressions matched against the full slash-joined path
+# Example: ["^docs/", "\\.lock$"]
+# exclude_regex = []
+
+# ============================================================================
 # PULL REQUESTS
 # ============================================================================
 # Settings of 'csl pr'. csl never calls GitHub: it prints the title, the body
