@@ -478,10 +478,6 @@
 # and the commands you can run yourself
 
 [pr]
-# merge: Merge method printed in the 'gh pr merge' hint (default: "squash")
-# Options: "squash", "rebase", "merge"
-# merge = "squash"
-
 # title_max_length: Maximum PR title length, counting type and scope (default: 100)
 # title_max_length = 100
 

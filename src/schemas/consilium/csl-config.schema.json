@@ -622,18 +622,8 @@
       "type": "object"
     },
     "pr": {
-      "description": "Pull request configuration used by 'csl pr'. csl never calls GitHub: these values only shape the printed title and the printed next-step hints",
+      "description": "Pull request configuration used by 'csl pr'. csl never calls GitHub: these values only shape the printed title",
       "properties": {
-        "merge": {
-          "default": "squash",
-          "description": "Merge method printed in the 'gh pr merge' hint",
-          "enum": [
-            "squash",
-            "rebase",
-            "merge"
-          ],
-          "type": "string"
-        },
         "title_max_length": {
           "default": 100,
           "description": "Maximum pull request title length in characters, counting the type and the scope",

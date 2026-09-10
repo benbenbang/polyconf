@@ -77,7 +77,9 @@ func TestSchemaPRAndHintSections(t *testing.T) {
 		t.Fatal("pr section missing")
 	}
 	prProperties := pr["properties"].(map[string]any)
-	assertEnum(t, prProperties, "merge", []string{"squash", "rebase", "merge"})
+	if _, ok := prProperties["merge"]; ok {
+		t.Fatal("pr.merge should not be accepted")
+	}
 	if _, ok := prProperties["title_max_length"]; !ok {
 		t.Fatal("pr.title_max_length missing")
 	}
