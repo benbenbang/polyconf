@@ -172,9 +172,10 @@ commit:
 
 llm:
   # Provider selection (required)
-  # Options: anthropic, openai, ollama, grok, gemini, gemini-cli, claude-code, mistral, bedrock
+  # Options: anthropic, openai, ollama, grok, gemini, gemini-cli, claude-code, codex, mistral, bedrock
   #   - gemini-cli: Google Gemini via OAuth token (GEMINI_CLI_TOKEN)
   #   - claude-code: Claude via the Claude Code CLI ('claude -p', no API key)
+  #   - codex: OpenAI via the Codex CLI ('codex exec', no API key)
   # provider: anthropic
 
   # ==========================================================================
@@ -306,6 +307,11 @@ llm:
   # Note: Very large diffs may impact LLM response quality
   # max_diff_size: 50000
 
+  # Split an oversize diff into parts and summarize them in parallel (default: false)
+  # Parts stay within max_diff_size; the message is written from the summaries
+  # Note: Costs one API call per part plus one for the final message
+  # fan_out: false
+
   # ==========================================================================
   # CUSTOM PROMPT PREFERENCES
   # ==========================================================================
@@ -387,13 +393,11 @@ stream:
   # mode: How to process diffs (default: "spinner")
   # Options:
   #   - "spinner": Single API call with progress animation (fast, cheap, recommended)
-  #   - "streaming": Per-file review then synthesis (slow, expensive, better UX for large diffs)
+  #   - "streaming": Deprecated, now behaves like llm.fan_out = true
   # mode: spinner
 
-  # threshold: Minimum total lines (insertions + deletions) to activate streaming
-  # Only used when mode = "streaming"
-  # Files below threshold use spinner mode even if streaming is enabled
-  # Default: 500 lines
+  # threshold: Ignored
+  # Kept only so older configs still load; fan-out splits on llm.max_diff_size
   # threshold: 500
 
 # ============================================================================
