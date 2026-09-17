@@ -542,6 +542,11 @@
           ],
           "type": "string"
         },
+        "fan_out": {
+          "default": false,
+          "description": "Split a diff larger than max_diff_size into parts, summarize them in parallel, then write the commit message from the summaries. Adds one API call per part plus one.",
+          "type": "boolean"
+        },
         "host": {
           "description": "Alias for base_url. Must start with http:// or https://. Useful for Ollama hosts such as http://192.168.1.10:11434.",
           "examples": [
@@ -597,7 +602,7 @@
           "type": "string"
         },
         "provider": {
-          "description": "LLM provider selection. Options: anthropic (Claude API), openai (GPT), ollama (local), grok (X.AI), gemini (Google API), gemini-cli (Google via OAuth token, GEMINI_CLI_TOKEN), claude-code (Claude via the Claude Code CLI, no API key), mistral (Mistral AI), bedrock (AWS)",
+          "description": "LLM provider selection. Options: anthropic (Claude API), openai (GPT), ollama (local), grok (X.AI), gemini (Google API), gemini-cli (Google via OAuth token, GEMINI_CLI_TOKEN), claude-code (Claude via the Claude Code CLI, no API key), codex (OpenAI via the Codex CLI, no API key), mistral (Mistral AI), bedrock (AWS)",
           "enum": [
             "anthropic",
             "openai",
@@ -606,6 +611,7 @@
             "gemini",
             "gemini-cli",
             "claude-code",
+            "codex",
             "mistral",
             "bedrock"
           ],
@@ -638,7 +644,7 @@
       "properties": {
         "mode": {
           "default": "spinner",
-          "description": "How to process diffs: 'spinner' (single API call with progress animation, fast and cheap) or 'streaming' (per-file review then synthesis, slower and more expensive, better UX for large diffs)",
+          "description": "How to process diffs: 'spinner' (single API call with progress animation) or 'streaming' (deprecated: now behaves like llm.fan_out = true)",
           "enum": [
             "spinner",
             "streaming"
@@ -647,7 +653,7 @@
         },
         "threshold": {
           "default": 500,
-          "description": "Minimum total changed lines (insertions + deletions) to activate streaming. Only used when mode = 'streaming'; smaller diffs use spinner mode",
+          "description": "Ignored. Kept only so older configs still load; fan-out splits on max_diff_size instead",
           "minimum": 1,
           "type": "integer"
         }
